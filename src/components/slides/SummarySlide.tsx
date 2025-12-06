@@ -40,32 +40,38 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
     const handleShare = async () => {
         if (ref.current && !isSharing) {
             setIsSharing(true);
-            try {
-                const dataUrl = await toPng(ref.current, {
-                    cacheBust: true,
-                    pixelRatio: 3,
-                    width: 360,
-                    height: 640
-                });
 
-                // Attempt native sharing
-                if (navigator.share) {
-                    const blob = await (await fetch(dataUrl)).blob();
-                    const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            files: [file],
-                            title: 'My Strong Wrapped',
-                            text: `Check out my year in lifting! 💪 #StrongWrapped`
+            // Allow UI to update to "Generating..." before blocking
+            setTimeout(async () => {
+                try {
+                    if (ref.current) {
+                        const dataUrl = await toPng(ref.current, {
+                            cacheBust: true,
+                            pixelRatio: 3,
+                            width: 360,
+                            height: 640
                         });
+
+                        // Attempt native sharing
+                        if (navigator.share) {
+                            const blob = await (await fetch(dataUrl)).blob();
+                            const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
+
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'My Strong Wrapped',
+                                    text: `Check out my year in lifting! 💪 #StrongWrapped`
+                                });
+                            }
+                        }
                     }
+                } catch (err) {
+                    console.error('Sharing failed:', err);
+                } finally {
+                    setIsSharing(false);
                 }
-            } catch (err) {
-                console.error('Sharing failed:', err);
-            } finally {
-                setIsSharing(false);
-            }
+            }, 100);
         }
     };
 

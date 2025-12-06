@@ -6,6 +6,20 @@
     color: #fff;
 }
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    /* Prevent dragging the whole page */
+    overscroll-behavior: none;
+    /* Prevent rubber-banding */
+    position: fixed;
+    /* Lock body in place */
+}
+
 @keyframes breathe {
 
     0%,
