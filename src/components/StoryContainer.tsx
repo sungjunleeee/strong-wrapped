@@ -9,6 +9,7 @@ interface StoryContainerProps {
 export const StoryContainer: React.FC<StoryContainerProps> = ({ children }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0); // 1 = down, -1 = up
+    const [touchStart, setTouchStart] = useState<number | null>(null);
 
     const handleNext = useCallback(() => {
         if (currentIndex < children.length - 1) {
@@ -70,8 +71,32 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ children }) => {
         }),
     };
 
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchStart(e.touches[0].clientY);
+    };
+
+    const onTouchEnd = (e: React.TouchEvent) => {
+        if (!touchStart) return;
+        const touchEnd = e.changedTouches[0].clientY;
+        const diff = touchStart - touchEnd;
+
+        // Swipe Up (Next)
+        if (diff > 50) {
+            handleNext();
+        }
+        // Swipe Down (Prev)
+        else if (diff < -50) {
+            handlePrev();
+        }
+        setTouchStart(null);
+    };
+
     return (
-        <div className="relative h-screen w-full overflow-hidden bg-black text-white">
+        <div
+            className="relative h-screen w-full overflow-hidden bg-black text-white"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
+        >
             <AnimatePresence initial={false} custom={direction} mode="wait">
                 <motion.div
                     key={currentIndex}

@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import type { YearStats } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toPng } from 'html-to-image';
-import { Share2, CheckSquare, Square } from 'lucide-react';
+import { Share2, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { BackgroundHeatmap } from '../BackgroundHeatmap';
 
 
@@ -14,6 +14,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [showHeatmap, setShowHeatmap] = useState(false);
     const [scale, setScale] = useState(1);
+    const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
         const calculateScale = () => {
@@ -37,7 +38,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
     }, []);
 
     const handleShare = async () => {
-        if (ref.current) {
+        if (ref.current && !isSharing) {
+            setIsSharing(true);
             try {
                 const dataUrl = await toPng(ref.current, {
                     cacheBust: true,
@@ -61,6 +63,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                 }
             } catch (err) {
                 console.error('Sharing failed:', err);
+            } finally {
+                setIsSharing(false);
             }
         }
     };
@@ -127,11 +131,11 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 ring-1 ring-white/5">
+                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/10">
                                     <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.totalWorkouts}</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Workouts</div>
                                 </div>
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 ring-1 ring-white/5">
+                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/10">
                                     <div className="text-3xl font-bold text-white drop-shadow-sm">{Math.round(stats.totalDurationMinutes / 60)}h</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Time</div>
                                 </div>
@@ -173,10 +177,11 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
 
                 <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-white/10"
+                    disabled={isSharing}
+                    className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-white/10 disabled:opacity-80 disabled:cursor-wait"
                 >
-                    <Share2 size={18} />
-                    Share Image
+                    {isSharing ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+                    {isSharing ? 'Generating...' : 'Share Image'}
                 </button>
             </div>
         </div>
