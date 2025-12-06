@@ -36,21 +36,31 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
         return () => window.removeEventListener('resize', calculateScale);
     }, []);
 
-    const handleDownload = async () => {
+    const handleShare = async () => {
         if (ref.current) {
             try {
                 const dataUrl = await toPng(ref.current, {
                     cacheBust: true,
-                    pixelRatio: 3, // Higher quality export
+                    pixelRatio: 3,
                     width: 360,
                     height: 640
                 });
-                const link = document.createElement('a');
-                link.download = `strong-wrapped-${stats.year}.png`;
-                link.href = dataUrl;
-                link.click();
+
+                // Attempt native sharing
+                if (navigator.share) {
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
+
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'My Strong Wrapped',
+                            text: `Check out my year in lifting! 💪 #StrongWrapped`
+                        });
+                    }
+                }
             } catch (err) {
-                console.error(err);
+                console.error('Sharing failed:', err);
             }
         }
     };
@@ -117,11 +127,11 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 shadow-inner ring-1 ring-white/5">
+                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 ring-1 ring-white/5">
                                     <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.totalWorkouts}</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Workouts</div>
                                 </div>
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 shadow-inner ring-1 ring-white/5">
+                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/5 ring-1 ring-white/5">
                                     <div className="text-3xl font-bold text-white drop-shadow-sm">{Math.round(stats.totalDurationMinutes / 60)}h</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Time</div>
                                 </div>
@@ -162,7 +172,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                 </button>
 
                 <button
-                    onClick={handleDownload}
+                    onClick={handleShare}
                     className="flex items-center gap-2 bg-white text-black px-8 py-3 rounded-full font-bold hover:scale-105 transition-transform shadow-lg shadow-white/10"
                 >
                     <Share2 size={18} />
