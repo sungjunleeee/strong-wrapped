@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+    font-family: 'Outfit', sans-serif;
+    background-color: #000;
+    color: #fff;
+}
+
+@keyframes breathe {
+
+    0%,
+    100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: scale(1.1) translate(10px, -10px);
+        opacity: 0.3;
+    }
+}
+
+@keyframes breathe-delayed {
+
+    0%,
+    100% {
+        transform: scale(1) translate(0, 0);
+        opacity: 0.1;
+    }
+
+    50% {
+        transform: scale(1.15) translate(-10px, 10px);
+        opacity: 0.2;
+    }
+}
+
+.animate-breathe {
+    animation: breathe 8s infinite ease-in-out;
+}
+
+.animate-breathe-delayed {
+    animation: breathe-delayed 10s infinite ease-in-out reverse;
+}
+
+/* 
+   Show warning only on touch devices (hover: none) 
+   that are in landscape orientation.
+   This avoids blocking desktop users.
+*/
+@media screen and (orientation: landscape) and (hover: none) {
+    .landscape-warning {
+        display: flex !important;
+    }
+}
