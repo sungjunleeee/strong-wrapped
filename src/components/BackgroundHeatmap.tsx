@@ -8,7 +8,7 @@ interface BackgroundHeatmapProps {
     stats: YearStats;
 }
 
-export const BackgroundHeatmap: React.FC<BackgroundHeatmapProps> = ({ stats }) => {
+export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) => {
     const days = useMemo(() => {
         const year = stats.year;
         const allDays = eachDayOfInterval({
@@ -95,4 +95,4 @@ export const BackgroundHeatmap: React.FC<BackgroundHeatmapProps> = ({ stats }) =
             })}
         </motion.div>
     );
-};
+});

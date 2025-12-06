@@ -49,73 +49,63 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
         if (ref.current && !isSharing) {
             setIsSharing(true);
 
-            // Copy text to clipboard immediately (user gesture)
-            const text = 'Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/';
-            try {
-                // Try async copy first
-                await navigator.clipboard.writeText(text);
-                console.log('Copied to clipboard (Async):', text);
-            } catch (err) {
-                console.warn('Async copy failed, trying legacy', err);
+            // Fire clipboard copy separately (parallel), don't await execution to avoid blocking
+            // Use legacy first if on mobile/safari often problematic with async clipboard during other async ops
+            (async () => {
+                const text = 'Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/';
                 try {
-                    // Fallback to legacy execCommand
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed"; // Avoid scrolling to bottom
-                    textArea.style.opacity = "0"; // Hide from view
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    console.log('Copied to clipboard (Legacy):', text);
-                } catch (legacyErr) {
-                    console.error('All clipboard methods failed', legacyErr);
+                    await navigator.clipboard.writeText(text);
+                    console.log('Copied to clipboard (Async):', text);
+                } catch (err) {
+                    console.warn('Async copy failed, trying legacy', err);
+                    try {
+                        const textArea = document.createElement("textarea");
+                        textArea.value = text;
+                        textArea.style.position = "fixed";
+                        textArea.style.opacity = "0";
+                        document.body.appendChild(textArea);
+                        textArea.focus();
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        console.log('Copied to clipboard (Legacy):', text);
+                    } catch (legacyErr) {
+                        console.error('All clipboard methods failed', legacyErr);
+                    }
                 }
-            }
+            })();
 
-            // Execute share logic in the next frame to allow UI update
-            requestAnimationFrame(async () => {
-                try {
-                    // await new Promise(resolve => setTimeout(resolve, 50)); // Small delay for UI repaint if needed
+            // Delay actual image gen slightly to allow "Generating" state to render
+            await new Promise(resolve => setTimeout(resolve, 0));
 
-                    if (ref.current) {
-                        const dataUrl = await toPng(ref.current, {
-                            cacheBust: true,
-                            pixelRatio: 3,
-                            width: 360,
-                            height: 640
-                        });
+            try {
+                if (ref.current) {
+                    const dataUrl = await toPng(ref.current, {
+                        cacheBust: true,
+                        pixelRatio: 3,
+                        width: 360,
+                        height: 640
+                    });
 
-                        // Proceed with sharing...
+                    // Proceed with sharing...
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
 
-                        // Fetch blob for sharing
-                        const res = await fetch(dataUrl);
-                        const blob = await res.blob();
-                        const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
-
-                        // Check specific share capabilities
-                        if (navigator.share) {
-                            // iOS Safari requires a direct object structure
-                            const shareData = {
-                                files: [file],
-                            };
-
-                            // Try sharing with files first (standard)
-                            if (navigator.canShare && navigator.canShare(shareData)) {
-                                await navigator.share(shareData);
-                            } else {
-                                // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
-                                console.warn('Device does not support file sharing, skipping.');
-                            }
+                    if (navigator.share) {
+                        const shareData = { files: [file] };
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                        } else {
+                            console.warn('Device does not support file sharing');
                         }
                     }
-                } catch (err) {
-                    console.error('Sharing failed:', err);
-                } finally {
-                    setIsSharing(false);
                 }
-            });
+            } catch (err) {
+                console.error('Sharing failed:', err);
+            } finally {
+                setIsSharing(false);
+            }
         }
     };
 
