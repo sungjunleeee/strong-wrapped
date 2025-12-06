@@ -52,17 +52,24 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                             height: 640
                         });
 
-                        // Attempt native sharing
-                        if (navigator.share) {
-                            const blob = await (await fetch(dataUrl)).blob();
-                            const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
+                        // Fetch blob for sharing
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
 
-                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                                await navigator.share({
-                                    files: [file],
-                                    title: 'My Strong Wrapped',
-                                    text: `Check out my year in lifting! 💪 #StrongWrapped`
-                                });
+                        // Check specific share capabilities
+                        if (navigator.share) {
+                            // iOS Safari requires a direct object structure
+                            const shareData = {
+                                files: [file],
+                            };
+
+                            // Try sharing with files first (standard)
+                            if (navigator.canShare && navigator.canShare(shareData)) {
+                                await navigator.share(shareData);
+                            } else {
+                                // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
+                                console.warn('Device does not support file sharing, skipping.');
                             }
                         }
                     }

@@ -95,13 +95,13 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen h-full bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-y-auto">
             {/* Ambient Background */}
             <div className="absolute top-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe" />
             <div className="absolute bottom-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe-delayed" />
 
             {/* Minimalist Container - No GlassCard */}
-            <div className="w-full max-w-md relative z-10 flex flex-col gap-10">
+            <div className="w-full max-w-md relative z-10 flex flex-col gap-6 my-10">
                 <div className="text-center space-y-4">
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-blue-600/20 backdrop-blur-xl border border-blue-400/20 shadow-[0_0_40px_-10px_rgba(37,99,235,0.3)] mb-2">
                         <Upload className="w-10 h-10 text-blue-400" />
@@ -141,7 +141,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
                                 : "bg-gradient-to-b from-white/5 to-transparent border border-white/10 hover:border-white/20 hover:bg-white/10"
                         )} />
 
-                        <div className="relative py-12 px-8 flex flex-col items-center justify-center min-h-[160px]">
+                        <div className="relative py-8 px-8 flex flex-col items-center justify-center min-h-[120px]">
                             <input
                                 type="file"
                                 ref={fileInputRef}
