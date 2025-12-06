@@ -95,7 +95,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
     };
 
     return (
-        <div className="min-h-screen h-full bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="min-h-screen h-full bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-y-auto overflow-x-hidden">
             {/* Ambient Background */}
             <div className="absolute top-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe" />
             <div className="absolute bottom-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe-delayed" />

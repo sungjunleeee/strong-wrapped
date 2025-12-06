@@ -41,6 +41,13 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
         if (ref.current && !isSharing) {
             setIsSharing(true);
 
+            // Copy text to clipboard immediately (user gesture)
+            try {
+                await navigator.clipboard.writeText('Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/');
+            } catch (err) {
+                console.warn('Failed to copy to clipboard', err);
+            }
+
             // Allow UI to update to "Generating..." before blocking
             setTimeout(async () => {
                 try {
