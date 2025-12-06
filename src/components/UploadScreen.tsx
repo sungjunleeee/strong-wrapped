@@ -95,7 +95,7 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
     };
 
     return (
-        <div className="min-h-screen h-full bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-y-auto">
+        <div className="min-h-screen h-full bg-black text-white p-6 flex flex-col items-center justify-center relative overflow-hidden">
             {/* Ambient Background */}
             <div className="absolute top-[-20%] right-[-20%] w-[80vw] h-[80vw] bg-blue-600/20 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe" />
             <div className="absolute bottom-[-20%] left-[-20%] w-[80vw] h-[80vw] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none mix-blend-screen animate-breathe-delayed" />
@@ -177,17 +177,18 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
                     </div>
 
                     {availableYears.length > 0 && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 w-full overflow-hidden">
                             <label className="text-xs text-blue-200/40 uppercase tracking-widest font-bold ml-4">Year</label>
-                            <div className="flex flex-wrap gap-3 justify-center">
+                            {/* Horizontal Scroll Container for Years */}
+                            <div className="flex gap-3 overflow-x-auto pb-2 px-1 scrollbar-hide snap-x">
                                 {availableYears.map(y => (
                                     <button
                                         key={y}
                                         onClick={() => setYear(y)}
                                         className={clsx(
-                                            "px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 border",
+                                            "flex-shrink-0 px-6 py-3 rounded-2xl text-sm font-bold transition-all duration-300 border snap-center",
                                             year === y
-                                                ? "bg-white text-black border-white shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] scale-110"
+                                                ? "bg-white text-black border-white shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)] scale-[1.05]"
                                                 : "bg-transparent text-blue-200/40 border-white/5 hover:border-white/20 hover:text-white"
                                         )}
                                     >
