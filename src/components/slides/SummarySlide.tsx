@@ -42,50 +42,57 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
             setIsSharing(true);
 
             // Copy text to clipboard immediately (user gesture)
+            // Copy text to clipboard immediately (user gesture)
             try {
-                await navigator.clipboard.writeText('Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/');
+                const text = 'Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/';
+                await navigator.clipboard.writeText(text);
+                console.log('Copied to clipboard:', text);
             } catch (err) {
                 console.warn('Failed to copy to clipboard', err);
             }
 
             // Allow UI to update to "Generating..." before blocking
-            setTimeout(async () => {
-                try {
-                    if (ref.current) {
-                        const dataUrl = await toPng(ref.current, {
-                            cacheBust: true,
-                            pixelRatio: 3,
-                            width: 360,
-                            height: 640
-                        });
+            // setTimeout(async () => {
+            try {
+                // Update state to force re-render for spinner
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                await new Promise(resolve => setTimeout(resolve, 50));
 
-                        // Fetch blob for sharing
-                        const res = await fetch(dataUrl);
-                        const blob = await res.blob();
-                        const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
+                if (ref.current) {
+                    const dataUrl = await toPng(ref.current, {
+                        cacheBust: true,
+                        pixelRatio: 3,
+                        width: 360,
+                        height: 640
+                    });
 
-                        // Check specific share capabilities
-                        if (navigator.share) {
-                            // iOS Safari requires a direct object structure
-                            const shareData = {
-                                files: [file],
-                            };
+                    // Fetch blob for sharing
+                    const res = await fetch(dataUrl);
+                    const blob = await res.blob();
+                    const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
 
-                            // Try sharing with files first (standard)
-                            if (navigator.canShare && navigator.canShare(shareData)) {
-                                await navigator.share(shareData);
-                            } else {
-                                // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
-                                console.warn('Device does not support file sharing, skipping.');
-                            }
+                    // Check specific share capabilities
+                    if (navigator.share) {
+                        // iOS Safari requires a direct object structure
+                        const shareData = {
+                            files: [file],
+                        };
+
+                        // Try sharing with files first (standard)
+                        if (navigator.canShare && navigator.canShare(shareData)) {
+                            await navigator.share(shareData);
+                        } else {
+                            // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
+                            console.warn('Device does not support file sharing, skipping.');
                         }
                     }
-                } catch (err) {
-                    console.error('Sharing failed:', err);
-                } finally {
-                    setIsSharing(false);
                 }
-            }, 100);
+            } catch (err) {
+                console.error('Sharing failed:', err);
+            } finally {
+                setIsSharing(false);
+            }
+            // }, 100);
         }
     };
 
