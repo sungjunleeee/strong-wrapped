@@ -77,10 +77,12 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
                         setYear(sortedYears[0]); // Default to latest
                     } else {
                         setError('No valid dates found in the CSV.');
+                        setFile(null);
                     }
                 } catch (err) {
                     console.error(err);
                     setError('Failed to parse CSV.');
+                    setFile(null);
                 } finally {
                     setIsParsing(false);
                 }
@@ -124,55 +126,97 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
 
                 <div className="space-y-8">
                     {/* Animated Drop Zone */}
-                    <div
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                        className={clsx(
-                            "relative group cursor-pointer transition-all duration-500",
-                            isDragging ? "scale-105" : "hover:scale-[1.02]"
-                        )}
-                    >
-                        <div className={clsx(
-                            "absolute inset-0 rounded-[2rem] text-center transition-all duration-500",
-                            isDragging
-                                ? "bg-blue-500/20 border-2 border-blue-400 blur-sm"
-                                : "bg-gradient-to-b from-white/5 to-transparent border border-white/10 hover:border-white/20 hover:bg-white/10"
-                        )} />
-
-                        <div className="relative py-8 px-8 flex flex-col items-center justify-center min-h-[120px]">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileInput}
-                                accept=".csv"
-                                className="hidden"
-                            />
-
-                            {file ? (
-                                <div className="space-y-3 text-center animate-in fade-in zoom-in duration-300">
-                                    <FileSpreadsheet className="w-12 h-12 text-blue-400 mx-auto drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
-                                    <div>
-                                        <p className="text-xl font-bold text-white">{file.name}</p>
-                                        <p className="text-sm text-blue-200/50">Ready to analyze</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="space-y-3 text-center">
-                                    <div className="w-12 h-12 mx-auto rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                                        <FileSpreadsheet className="w-6 h-6 text-blue-200/50 group-hover:text-blue-100 transition-colors" />
-                                    </div>
-                                    <div>
-                                        <p className="text-lg font-bold text-white group-hover:text-blue-100 transition-colors">
-                                            Select CSV File
-                                        </p>
-                                        <p className="text-xs text-blue-200/30 uppercase tracking-widest font-bold mt-1">
-                                            or drag and drop
-                                        </p>
-                                    </div>
-                                </div>
+                    {/* Split Action Buttons */}
+                    <div className="flex flex-col gap-4">
+                        {/* PASTE BUTTON */}
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const text = await navigator.clipboard.readText();
+                                    if (text) {
+                                        // Create a dummy file object from the pasted text
+                                        const pastedFile = new File([text], "pasted_data.csv", { type: "text/csv" });
+                                        processFile(pastedFile);
+                                    } else {
+                                        setError('Clipboard is empty.');
+                                    }
+                                } catch (err) {
+                                    console.error('Failed to read clipboard', err);
+                                    setError('Failed to paste. Please allow clipboard access.');
+                                }
+                            }}
+                            className={clsx(
+                                "relative group cursor-pointer transition-all duration-300 w-full overflow-hidden rounded-[1.5rem] border border-white/10 hover:border-blue-400/50",
+                                file ? "h-[60px]" : "h-[100px]",
+                                "bg-gradient-to-br from-white/5 to-transparent hover:bg-white/10"
                             )}
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <FileSpreadsheet className="w-5 h-5 text-blue-300" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-sm font-bold text-white group-hover:text-blue-100 transition-colors">
+                                        Paste CSV Data
+                                    </p>
+                                    <p className="text-[10px] text-blue-200/40 uppercase tracking-widest font-bold">
+                                        from clipboard
+                                    </p>
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* UPLOAD / DRAG BUTTON */}
+                        <div
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={clsx(
+                                "relative group cursor-pointer transition-all duration-500 rounded-[1.5rem] overflow-hidden border",
+                                file ? "h-[80px] border-blue-500/50 bg-blue-500/10" : "h-[100px] border-white/10 hover:border-white/20 bg-gradient-to-br from-white/5 to-transparent hover:bg-white/10",
+                                isDragging && "scale-[1.02] border-blue-400 bg-blue-500/20"
+                            )}
+                        >
+                            <div className="absolute inset-0 flex items-center justify-center gap-3">
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleFileInput}
+                                    accept=".csv"
+                                    className="hidden"
+                                />
+
+                                {file ? (
+                                    <div className="flex items-center gap-4 animate-in fade-in zoom-in duration-300">
+                                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                            <Upload className="w-5 h-5 text-green-400" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm font-bold text-white line-clamp-1 break-all">
+                                                {file.name}
+                                            </p>
+                                            <p className="text-[10px] text-green-300/60 uppercase tracking-widest font-bold">
+                                                Ready to analyze
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                                            <Upload className="w-5 h-5 text-blue-200/50 group-hover:text-blue-100 transition-colors" />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-sm font-bold text-white group-hover:text-blue-100 transition-colors">
+                                                Select CSV File
+                                            </p>
+                                            <p className="text-[10px] text-blue-200/30 uppercase tracking-widest font-bold">
+                                                or drag and drop
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 

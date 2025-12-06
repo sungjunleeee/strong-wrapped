@@ -37,62 +37,85 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
         return () => window.removeEventListener('resize', calculateScale);
     }, []);
 
+    // Warm up html-to-image to prevent first-click issues (common with font loading)
+    useEffect(() => {
+        if (ref.current) {
+            toPng(ref.current, { cacheBust: true, pixelRatio: 1, width: 1, height: 1 })
+                .catch(() => { }); // Ignore errors, just warming up
+        }
+    }, [showHeatmap]); // Re-warm when heatmap loads
+
     const handleShare = async () => {
         if (ref.current && !isSharing) {
             setIsSharing(true);
 
             // Copy text to clipboard immediately (user gesture)
-            // Copy text to clipboard immediately (user gesture)
+            const text = 'Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/';
             try {
-                const text = 'Check out my year in lifting! 💪 #StrongWrapped https://sungjunleeee.github.io/strong-wrapped/';
+                // Try async copy first
                 await navigator.clipboard.writeText(text);
-                console.log('Copied to clipboard:', text);
+                console.log('Copied to clipboard (Async):', text);
             } catch (err) {
-                console.warn('Failed to copy to clipboard', err);
+                console.warn('Async copy failed, trying legacy', err);
+                try {
+                    // Fallback to legacy execCommand
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; // Avoid scrolling to bottom
+                    textArea.style.opacity = "0"; // Hide from view
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    console.log('Copied to clipboard (Legacy):', text);
+                } catch (legacyErr) {
+                    console.error('All clipboard methods failed', legacyErr);
+                }
             }
 
-            // Allow UI to update to "Generating..." before blocking
-            // setTimeout(async () => {
-            try {
-                // Update state to force re-render for spinner
-                await new Promise(resolve => requestAnimationFrame(resolve));
-                await new Promise(resolve => setTimeout(resolve, 50));
+            // Execute share logic in the next frame to allow UI update
+            requestAnimationFrame(async () => {
+                try {
+                    // await new Promise(resolve => setTimeout(resolve, 50)); // Small delay for UI repaint if needed
 
-                if (ref.current) {
-                    const dataUrl = await toPng(ref.current, {
-                        cacheBust: true,
-                        pixelRatio: 3,
-                        width: 360,
-                        height: 640
-                    });
+                    if (ref.current) {
+                        const dataUrl = await toPng(ref.current, {
+                            cacheBust: true,
+                            pixelRatio: 3,
+                            width: 360,
+                            height: 640
+                        });
 
-                    // Fetch blob for sharing
-                    const res = await fetch(dataUrl);
-                    const blob = await res.blob();
-                    const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
+                        // Proceed with sharing...
 
-                    // Check specific share capabilities
-                    if (navigator.share) {
-                        // iOS Safari requires a direct object structure
-                        const shareData = {
-                            files: [file],
-                        };
+                        // Fetch blob for sharing
+                        const res = await fetch(dataUrl);
+                        const blob = await res.blob();
+                        const file = new File([blob], `strong-wrapped-${stats.year}.png`, { type: 'image/png' });
 
-                        // Try sharing with files first (standard)
-                        if (navigator.canShare && navigator.canShare(shareData)) {
-                            await navigator.share(shareData);
-                        } else {
-                            // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
-                            console.warn('Device does not support file sharing, skipping.');
+                        // Check specific share capabilities
+                        if (navigator.share) {
+                            // iOS Safari requires a direct object structure
+                            const shareData = {
+                                files: [file],
+                            };
+
+                            // Try sharing with files first (standard)
+                            if (navigator.canShare && navigator.canShare(shareData)) {
+                                await navigator.share(shareData);
+                            } else {
+                                // Fallback: try sharing just text if file sharing fails (though unlikely for our case)
+                                console.warn('Device does not support file sharing, skipping.');
+                            }
                         }
                     }
+                } catch (err) {
+                    console.error('Sharing failed:', err);
+                } finally {
+                    setIsSharing(false);
                 }
-            } catch (err) {
-                console.error('Sharing failed:', err);
-            } finally {
-                setIsSharing(false);
-            }
-            // }, 100);
+            });
         }
     };
 
