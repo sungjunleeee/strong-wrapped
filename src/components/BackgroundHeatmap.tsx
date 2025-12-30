@@ -1,8 +1,9 @@
 import React, { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { eachDayOfInterval, format, startOfYear, endOfYear } from 'date-fns';
+import { format } from 'date-fns';
 
 import type { YearStats } from '../types';
+import { generateYearDays, STRONG_BLUE_RGB, getHeatmapOpacity } from '../utils/heatmap';
 
 interface BackgroundHeatmapProps {
     stats: YearStats;
@@ -12,11 +13,7 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
     const days = useMemo(() => {
-        const year = stats.year;
-        const allDays = eachDayOfInterval({
-            start: startOfYear(new Date(year, 0, 1)),
-            end: endOfYear(new Date(year, 0, 1))
-        });
+        const allDays = generateYearDays(stats.year);
 
         // Calculate columns to ensure a perfect rectangles
         // 360px (width) - 24px (padding) = 336px available
@@ -28,7 +25,7 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
         return allDays.slice(0, allDays.length - remainder);
     }, [stats.year]);
 
-    const STRONG_BLUE = '46, 164, 247'; // #2ea4f7 RGB
+    const STRONG_BLUE = STRONG_BLUE_RGB;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -79,10 +76,7 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
             const count = stats.workoutsByDate[dateStr] || 0;
 
             // Determine opacity based on count
-            let alpha = 0.05;
-            if (count === 1) alpha = 0.15;
-            else if (count === 2) alpha = 0.3;
-            else if (count >= 3) alpha = 0.5;
+            const alpha = getHeatmapOpacity(count);
 
             // Draw rounded rect (simplified as normal rect for canvas speed, or customized path)
             ctx.fillStyle = `rgba(${STRONG_BLUE}, ${alpha})`;

@@ -81,9 +81,9 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                 }
             })();
 
-            // Delay actual image gen slightly to allow "Generating" state to render
-            // Increased delay to ensure the UI thread has time to paint before the heavy toPng calculation starts
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Delay actual image gen to allow "Generating" state to render AND ensure Heatmap animation (300ms) completes
+            // We use 600ms to be safe (300ms animation + buffer)
+            await new Promise(resolve => setTimeout(resolve, 600));
 
             try {
                 if (ref.current) {
