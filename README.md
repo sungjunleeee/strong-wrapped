@@ -1,73 +1,59 @@
-# React + TypeScript + Vite
+# Strong Wrapped
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Visualize your year in gains with a Spotify Wrapped-style summary for your Strong app workout data.
 
-Currently, two official plugins are available:
+<img src="https://github.com/sungjunleeee/strong-wrapped/blob/main/public/og-image.png?raw=true" alt="Strong Wrapped" width="800" />
+> Note: If you don't have an OG image yet, you might want to add one to `public/og-image.png` for a nice preview.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Features
 
-## React Compiler
+- **Visual Story:** Experience your workout year through animated slides (Intro, Stats, Top Exercises, Consistency, Summary).
+- **Shareable Summary:** Generate and share a sleek image card of your annual stats directly from the app.
+- **Privacy First:** All CSV parsing and data processing happens **locally** in your browser. No data is sent to any server.
+- **Strong App Compatible:** Designed to work specifically with the CSV export from the Strong workout tracker.
+- **Customizable:** Choose your preferred units (kg/lbs) and select the specific year you want to view.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+- **Framework:** [React](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Animations:** [Framer Motion](https://www.framer.com/motion/)
+- **Charts:** [Recharts](https://recharts.org/)
+- **Utilities:** `papaparse` (CSV parsing), `date-fns` (Date manipulation)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🏃‍♂️ How to Run Locally
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/sungjunleeee/strong-wrapped.git
+   cd strong-wrapped
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+   *(or `yarn`, `pnpm`, `bun`)*
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🔒 Privacy & Security
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+This application runs client-side only. When you upload your Strong CSV export, the file is parsed directly in your browser's memory. No workout data is ever transmitted to a backend or third-party service.
+
+## ⚠️ Disclaimer
+
+This is a personal project and is **not** affiliated with, endorsed by, or connected to [Strong](https://www.strong.app/). "Strong" is a registered trademark of Strong Fitness Pte Ltd.
+
+---
+
+Made with ❤️ by [Sungjun](https://github.com/sungjunleeee)

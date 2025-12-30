@@ -37,13 +37,19 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
         return () => window.removeEventListener('resize', calculateScale);
     }, []);
 
-    // Warm up html-to-image to prevent first-click issues (common with font loading)
+    // Warm up html-to-image to prevent first-click issues (common with font loading or canvas init)
     useEffect(() => {
-        if (ref.current) {
-            toPng(ref.current, { cacheBust: true, pixelRatio: 1, width: 1, height: 1 })
-                .catch(() => { }); // Ignore errors, just warming up
+        if (ref.current && showHeatmap) {
+            // We moved to Canvas which is much lighter, so we can re-enable this warmup 
+            // to ensure the canvas is captured correctly on the first real "Share" click.
+            // We use a timeout to let the fade-in animation start smoothly first.
+            const timer = setTimeout(() => {
+                toPng(ref.current!, { cacheBust: false, pixelRatio: 1, width: 1, height: 1 })
+                    .catch(() => { });
+            }, 500);
+            return () => clearTimeout(timer);
         }
-    }, [showHeatmap]); // Re-warm when heatmap loads
+    }, [showHeatmap]);
 
     const handleShare = async () => {
         if (ref.current && !isSharing) {
@@ -76,12 +82,23 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
             })();
 
             // Delay actual image gen slightly to allow "Generating" state to render
-            await new Promise(resolve => setTimeout(resolve, 0));
+            // Increased delay to ensure the UI thread has time to paint before the heavy toPng calculation starts
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             try {
                 if (ref.current) {
+                    // Double-render strategy:
+                    // If heatmap (canvas) is visible, the first capture might be empty or incomplete
+                    // This is a known quirk with html-to-image and canvases/webgl
+                    // We run a low-res capture first to force the serializer to "wake up"
+                    if (showHeatmap) {
+                        try {
+                            await toPng(ref.current, { cacheBust: false, pixelRatio: 1, width: 360, height: 640 });
+                        } catch (e) { /* ignore */ }
+                    }
+
                     const dataUrl = await toPng(ref.current, {
-                        cacheBust: true,
+                        cacheBust: false, // Removed cacheBust as it sends extra requests and we don't have remote images
                         pixelRatio: 3,
                         width: 360,
                         height: 640

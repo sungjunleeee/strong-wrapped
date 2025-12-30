@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { eachDayOfInterval, format, startOfYear, endOfYear } from 'date-fns';
 
@@ -9,6 +9,8 @@ interface BackgroundHeatmapProps {
 }
 
 export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) => {
+    const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
     const days = useMemo(() => {
         const year = stats.year;
         const allDays = eachDayOfInterval({
@@ -23,49 +25,94 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
         const columns = 14;
         const remainder = allDays.length % columns;
 
-        // Remove the remainder days to keep the grid perfectly rectangular
-        // This usually drops Dec 31st (and 30th on leap years)
         return allDays.slice(0, allDays.length - remainder);
     }, [stats.year]);
 
     const STRONG_BLUE = '46, 164, 247'; // #2ea4f7 RGB
 
-    const getColorStyle = (dateStr: string) => {
-        const count = stats.workoutsByDate[dateStr] || 0;
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-        // Base color is the Strong Blue
-        // We vary alpha channel for intensity
-        // Lowered alphas since parent opacity is removed to allow text visibility
-        if (count === 0) return { backgroundColor: `rgba(${STRONG_BLUE}, 0.05)` };
-        if (count === 1) return { backgroundColor: `rgba(${STRONG_BLUE}, 0.15)` };
-        if (count === 2) return { backgroundColor: `rgba(${STRONG_BLUE}, 0.3)` };
-        if (count >= 3) return { backgroundColor: `rgba(${STRONG_BLUE}, 0.5)` };
-        return { backgroundColor: `rgba(${STRONG_BLUE}, 0.05)` };
-    };
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Constants matching previous CSS
+        const ITEM_SIZE = 20;
+        const GAP = 3;
+        const COLUMNS = 14;
+        const PADDING = 12; // p-3 = 12px
+
+        // Calculate canvas size based on content
+        // Width: (14 * 20) + (13 * 3) + (12 * 2) = 280 + 39 + 24 = 343 (approx fits in 360)
+        // We stick to the container size logic
+        const contentWidth = (COLUMNS * ITEM_SIZE) + ((COLUMNS - 1) * GAP);
+        const rows = Math.ceil(days.length / COLUMNS);
+        const contentHeight = (rows * ITEM_SIZE) + ((rows - 1) * GAP);
+
+        // Canvas dimensions (including padding)
+        const width = contentWidth + (PADDING * 2);
+        const height = contentHeight + (PADDING * 2);
+
+        // Handle High DPI displays
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, width, height);
+
+        // Text settings for Month labels
+        ctx.font = '900 6px Inter, system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        days.forEach((day, i) => {
+            const col = i % COLUMNS;
+            const row = Math.floor(i / COLUMNS);
+
+            const x = PADDING + (col * (ITEM_SIZE + GAP));
+            const y = PADDING + (row * (ITEM_SIZE + GAP));
+            const dateStr = format(day, 'yyyy-MM-dd');
+            const count = stats.workoutsByDate[dateStr] || 0;
+
+            // Determine opacity based on count
+            let alpha = 0.05;
+            if (count === 1) alpha = 0.15;
+            else if (count === 2) alpha = 0.3;
+            else if (count >= 3) alpha = 0.5;
+
+            // Draw rounded rect (simplified as normal rect for canvas speed, or customized path)
+            ctx.fillStyle = `rgba(${STRONG_BLUE}, ${alpha})`;
+
+            // Rounded rectangle helper
+            const radius = 6; // rounded-md approx 6px
+            ctx.beginPath();
+            ctx.roundRect(x, y, ITEM_SIZE, ITEM_SIZE, radius);
+            ctx.fill();
+
+            // Draw Month Label
+            if (day.getDate() === 1) {
+                const monthText = format(day, 'MMM').toUpperCase();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fillText(monthText, x + (ITEM_SIZE / 2), y + (ITEM_SIZE / 2));
+            }
+        });
+
+    }, [days, stats.workoutsByDate]);
 
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
             opacity: 1,
-            transition: {
-                staggerChildren: 0.001,
-                delayChildren: 0
-            }
+            transition: { duration: 0.3 }
         },
         exit: {
             opacity: 0,
-            transition: {
-                staggerChildren: 0.001,
-                staggerDirection: -1,
-                when: "afterChildren"
-            }
+            transition: { duration: 0.2 }
         }
-    };
-
-    const itemVariants = {
-        hidden: { opacity: 0 },
-        visible: { opacity: 1 },
-        exit: { opacity: 0 }
     };
 
     return (
@@ -74,25 +121,9 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute inset-0 z-0 overflow-hidden flex flex-wrap justify-center content-center gap-[3px] p-3"
+            className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center p-3"
         >
-            {days.map((day) => {
-                const isFirstDay = day.getDate() === 1;
-                return (
-                    <motion.div
-                        key={day.toISOString()}
-                        variants={itemVariants}
-                        className="w-[20px] h-[20px] rounded-md relative flex items-center justify-center pointer-events-none"
-                        style={getColorStyle(format(day, 'yyyy-MM-dd'))}
-                    >
-                        {isFirstDay && (
-                            <span className="text-[6px] font-black text-white/50 tracking-tighter shadow-sm select-none">
-                                {format(day, 'MMM').toUpperCase()}
-                            </span>
-                        )}
-                    </motion.div>
-                );
-            })}
+            <canvas ref={canvasRef} />
         </motion.div>
     );
 });

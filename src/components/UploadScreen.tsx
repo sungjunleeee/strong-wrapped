@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileSpreadsheet } from 'lucide-react';
+import { Upload, FileSpreadsheet, Github } from 'lucide-react';
 import clsx from 'clsx';
 import { parseStrongCSV } from '../utils/parser';
 
@@ -283,10 +283,22 @@ export const UploadScreen: React.FC<UploadScreenProps> = ({ onDataLoaded }) => {
                     </button>
                 </div>
 
-                <div className="text-center pt-8">
+                <div className="text-center pt-8 space-y-2">
                     <p className="text-[10px] text-blue-200/20 font-mono uppercase tracking-[0.2em] hover:text-blue-200/40 transition-colors cursor-default">
                         Privacy First • Local Only
                     </p>
+                    <p className="text-[10px] text-blue-200/20 font-sans text-center max-w-[200px] mx-auto leading-tight">
+                        Not affiliated with Strong app.
+                    </p>
+                    <a
+                        href="https://github.com/sungjunleeee/strong-wrapped"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[10px] text-blue-200/20 font-mono uppercase tracking-[0.2em] hover:text-blue-200/40 transition-colors pt-2"
+                    >
+                        <Github className="w-3 h-3" />
+                        <span>Source</span>
+                    </a>
                 </div>
             </div>
         </div>
