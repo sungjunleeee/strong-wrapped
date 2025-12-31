@@ -23,7 +23,6 @@ export const useWorkoutData = () => {
             // Calculate stats for target year
             const yearStats = calculateYearStats(sessions, year, units);
             setStats(yearStats);
-            console.log('Parsed Stats:', yearStats);
         } catch (err) {
             console.error(err);
             setError('Failed to parse CSV data. Please check the file format.');

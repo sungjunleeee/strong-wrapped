@@ -3,20 +3,23 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 
 interface StoryContainerProps {
-    children: React.ReactNode[];
+    children: React.ReactNode;
 }
 
 export const StoryContainer: React.FC<StoryContainerProps> = ({ children }) => {
+    // Convert children to array to handle single child case robustly
+    const slides = React.Children.toArray(children);
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [direction, setDirection] = useState(0); // 1 = down, -1 = up
     const [touchStart, setTouchStart] = useState<number | null>(null);
 
     const handleNext = useCallback(() => {
-        if (currentIndex < children.length - 1) {
+        if (currentIndex < slides.length - 1) {
             setDirection(1);
             setCurrentIndex((prev) => prev + 1);
         }
-    }, [currentIndex, children.length]);
+    }, [currentIndex, slides.length]);
 
     const handlePrev = useCallback(() => {
         if (currentIndex > 0) {
@@ -111,13 +114,13 @@ export const StoryContainer: React.FC<StoryContainerProps> = ({ children }) => {
                     }}
                     className="absolute inset-0 flex items-center justify-center p-4"
                 >
-                    {children[currentIndex]}
+                    {slides[currentIndex]}
                 </motion.div>
             </AnimatePresence>
 
             {/* Progress Indicators */}
             <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-50">
-                {children.map((_, idx) => (
+                {slides.map((_, idx) => (
                     <div
                         key={idx}
                         className={clsx(

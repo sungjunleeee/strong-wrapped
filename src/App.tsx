@@ -2,10 +2,10 @@
 import { useWorkoutData } from './hooks/useWorkoutData';
 import { Loader2 } from 'lucide-react';
 import { StoryContainer } from './components/StoryContainer';
-import { IntroSlide } from './components/slides/IntroSlide';
-import { StatsSlide } from './components/slides/StatsSlide';
-import { TopExercisesSlide } from './components/slides/TopExercisesSlide';
-import { ConsistencySlide } from './components/slides/ConsistencySlide';
+// import { IntroSlide } from './components/slides/IntroSlide';
+// import { StatsSlide } from './components/slides/StatsSlide';
+// import { TopExercisesSlide } from './components/slides/TopExercisesSlide';
+// import { ConsistencySlide } from './components/slides/ConsistencySlide';
 import { SummarySlide } from './components/slides/SummarySlide';
 
 import { UploadScreen } from './components/UploadScreen';
@@ -32,10 +32,10 @@ function App() {
         <OrientationLock />
         <BugReporter rawCSV={rawCSV} />
         <StoryContainer>
-          <IntroSlide year={stats.year} />
-          <StatsSlide stats={stats} />
-          <TopExercisesSlide stats={stats} />
-          <ConsistencySlide stats={stats} />
+          {/* <IntroSlide year={stats.year} /> */}
+          {/* <StatsSlide stats={stats} /> */}
+          {/* <TopExercisesSlide stats={stats} /> */}
+          {/* <ConsistencySlide stats={stats} /> */}
           <SummarySlide stats={stats} />
         </StoryContainer>
       </div>

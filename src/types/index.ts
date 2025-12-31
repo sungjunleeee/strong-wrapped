@@ -43,7 +43,11 @@ export interface YearStats {
     topExercises: { name: string; count: number }[];
     bodyPartSplit: Record<BodyPart, number>;
     activeMonths: Record<string, number>; // "Jan": 5
-    heaviestLift: { name: string; weight: number };
+    heaviestLift: { name: string; weight: number; date: Date };
+    longestWorkout: { durationMinutes: number; date: Date; name: string };
+    mostRepsSet: { weight: number; reps: number; exerciseName: string; date: Date };
+    longestStreak: { days: number; startDate: Date; endDate: Date };
+    longestWeekStreak: { weeks: number; startDate: Date; endDate: Date };
     workoutsByDate: Record<string, number>; // "2024-01-01": 1
     mostActiveMonth: string;
     year: number;

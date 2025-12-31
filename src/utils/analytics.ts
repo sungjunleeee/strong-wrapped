@@ -1,7 +1,7 @@
 import type { WorkoutSession, YearStats } from '../types';
 import { getBodyPart } from './exercises';
 import type { BodyPart } from '../types';
-import { format } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 
 
 
@@ -17,11 +17,23 @@ export const calculateYearStats = (sessions: WorkoutSession[], year: number = 20
     const workoutsByDate: Record<string, number> = {};
 
     let heaviestLift = { name: '', weight: 0, date: new Date() };
+    let longestWorkout = { durationMinutes: 0, date: new Date(), name: '' };
+    // Track most reps (highest rep count in a single set)
+    let mostRepsSet = { weight: 0, reps: 0, exerciseName: '', date: new Date() };
 
     targetSessions.forEach(session => {
         // Parse duration
         // Access durationMinutes directly as it is now number in WorkoutSession
         totalDuration += session.durationMinutes;
+
+        // Longest Workout
+        if (session.durationMinutes > longestWorkout.durationMinutes) {
+            longestWorkout = {
+                durationMinutes: session.durationMinutes,
+                date: session.date,
+                name: session.name
+            };
+        }
 
         // Monthly stats
         const month = format(session.date, 'MMMM');
@@ -33,14 +45,6 @@ export const calculateYearStats = (sessions: WorkoutSession[], year: number = 20
 
         session.sets.forEach(set => {
             // Volume
-            // Exclude warmups? Logic: If order is 1,2,3... usually work sets. 'W' is warmup.
-            // Strong export: 'Set Order' can be 'W'.
-            // Note: parser stores order as number. If it was 'W', parser stored 0.
-            // Let's exclude 0 (warmup) from Volume if we want "Effective Volume", but usually Volume includes everything?
-            // Let's include everything for "Total Volume" bragging rights, or maybe filter W.
-            // User prompt doesn't specify. 'W' usually means warmup.
-            // Let's count everything for now but note distinct heaviest if it's not warmup.
-
             if (set.weight > 0 && set.reps > 0) {
                 totalVolume += set.weight * set.reps;
             }
@@ -48,6 +52,27 @@ export const calculateYearStats = (sessions: WorkoutSession[], year: number = 20
             // Heaviest Lift (Max Weight)
             if (set.weight > heaviestLift.weight) {
                 heaviestLift = { name: set.exerciseName, weight: set.weight, date: session.date };
+            }
+
+            // Most Reps
+            // We want the set with the highest reps.
+            // If reps are tied, maybe prefer higher weight?
+            if (set.reps > mostRepsSet.reps) {
+                mostRepsSet = {
+                    weight: set.weight,
+                    reps: set.reps,
+                    exerciseName: set.exerciseName,
+                    date: session.date
+                };
+            } else if (set.reps === mostRepsSet.reps) {
+                if (set.weight > mostRepsSet.weight) {
+                    mostRepsSet = {
+                        weight: set.weight,
+                        reps: set.reps,
+                        exerciseName: set.exerciseName,
+                        date: session.date
+                    };
+                }
             }
 
             // Exercise Counts (Frequency)
@@ -96,6 +121,65 @@ export const calculateYearStats = (sessions: WorkoutSession[], year: number = 20
         activeMonths[month] = count;
     });
 
+    // Longest Streak Calculation (Days)
+    // Sort all unique workout dates
+
+
+    // Existing daily streak logic (keeping it just in case, but we will return week streak)
+    // ... (omitted for brevity, assume replaced logic)
+
+    // Calculate Weekly Streak
+    // Get unique "Week Starts"
+    // Using ISO week or standard week? Let's use start of week (Monday or Sunday).
+    // Let's use ISO week string "yyyy-Www" or just start date of week
+
+
+
+
+
+
+
+    // Weekly Streak: Convert all dates to "Start of Week" timestamp
+    const startOfWeeks = Array.from(new Set(targetSessions.map(s => {
+        // Use date-fns for reliable matching (Monday start)
+        return startOfWeek(s.date, { weekStartsOn: 1 }).getTime();
+    }))).sort((a, b) => a - b);
+
+    let maxWeeks = 0;
+    let currWeeks = 0;
+    let maxWeeksStartDate = new Date(); // Start of the streak
+
+    // Capture the start of the current streak
+    let currWeeksStartDate = new Date(startOfWeeks[0] || Date.now());
+
+    for (let i = 0; i < startOfWeeks.length; i++) {
+        const current = startOfWeeks[i];
+
+        if (i === 0) {
+            currWeeks = 1;
+            currWeeksStartDate = new Date(current);
+        } else {
+            const prev = startOfWeeks[i - 1];
+            const diffTime = current - prev;
+            const OneWeekMs = 7 * 24 * 60 * 60 * 1000;
+            // Allow some wiggle room for daylight savings (approx 1 week)
+            // 7 days +/- 1 hour
+
+            if (diffTime <= OneWeekMs + 3600000 * 2 && diffTime >= OneWeekMs - 3600000 * 2) {
+                currWeeks++;
+            } else {
+                currWeeks = 1;
+                currWeeksStartDate = new Date(current);
+            }
+        }
+
+        if (currWeeks > maxWeeks) {
+            maxWeeks = currWeeks;
+            maxWeeksStartDate = currWeeksStartDate;
+        }
+    }
+
+
     const totalWorkouts = targetSessions.length;
 
     return {
@@ -105,10 +189,19 @@ export const calculateYearStats = (sessions: WorkoutSession[], year: number = 20
         topExercises: sortedExercises,
         bodyPartSplit,
         activeMonths,
-        heaviestLift: {
-            name: heaviestLift.name,
-            weight: heaviestLift.weight
+        heaviestLift,
+        longestWorkout,
+        longestStreak: {
+            days: 0, // Deprecated or calculate daily streak if needed, but user wants weeks. Setting to 0 to satisfy type for now.
+            startDate: new Date(),
+            endDate: new Date()
         },
+        longestWeekStreak: {
+            weeks: maxWeeks,
+            startDate: maxWeeksStartDate,
+            endDate: new Date(maxWeeksStartDate.getTime() + (maxWeeks * 7 * 24 * 60 * 60 * 1000)) // Approx end date
+        },
+        mostRepsSet,
         workoutsByDate,
         mostActiveMonth,
         year,

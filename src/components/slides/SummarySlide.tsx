@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import type { YearStats } from '../../types';
 import { motion } from 'framer-motion';
 import { toPng } from 'html-to-image';
-import { Share2, CheckSquare, Square, Loader2 } from 'lucide-react';
+import { Square, CheckSquare, Github, Share2, Loader2 } from 'lucide-react';
 import { BackgroundHeatmap } from '../BackgroundHeatmap';
 
 
@@ -98,10 +98,14 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                     }
 
                     const dataUrl = await toPng(ref.current, {
-                        cacheBust: false, // Removed cacheBust as it sends extra requests and we don't have remote images
+                        cacheBust: true, // Enabled cacheBust for the main capture
                         pixelRatio: 3,
                         width: 360,
-                        height: 640
+                        height: 640,
+                        // Attempt to fix CORS issue with Google Fonts and other external resources
+                        fetchRequestInit: {
+                            mode: 'no-cors',
+                        },
                     });
 
                     // Proceed with sharing...
@@ -145,7 +149,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                 >
                     <div
                         ref={ref}
-                        className="relative w-[360px] h-[640px] rounded-[40px] overflow-hidden flex flex-col justify-between p-8"
+                        className="relative w-[360px] h-[640px] rounded-[40px] overflow-hidden flex flex-col justify-between p-6"
                         style={{
                             background: 'rgb(8, 8, 10)', // Deep dark base
                             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' // Basic shadow
@@ -176,42 +180,80 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
 
                         {/* Content Layer */}
                         <div className="relative z-10 flex flex-col h-full bg-transparent">
-                            <div className="mt-12 mb-6 flex items-baseline gap-3">
-                                <h1 className="text-5xl font-black tracking-tighter text-white drop-shadow-lg filter">
+                            <div className="mt-8 mb-4 flex items-baseline gap-3">
+                                <h1 className="text-4xl font-black tracking-tighter text-white drop-shadow-lg filter">
                                     <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">WRAPPED</span>
                                 </h1>
                                 <p className="text-xl text-blue-400 font-bold drop-shadow-md">{stats.year}</p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/10">
-                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.totalWorkouts}</div>
+                            {/* Hero Stat: Volume */}
+                            <div className="mb-4">
+                                <div className="text-6xl font-black text-white tracking-tighter drop-shadow-xl flex items-baseline gap-2">
+                                    {(stats.totalVolume / 1000).toFixed(1)}
+                                    <span className="text-2xl text-blue-400/80 font-bold tracking-normal">k</span>
+                                </div>
+                                <div className="text-xs text-blue-200/60 uppercase tracking-widest font-bold ml-1">{stats.units} Volume</div>
+                            </div>
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 grid-rows-[auto_auto_auto] gap-3 my-auto">
+                                {/* Row 1: Workouts & Time */}
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
+                                    <div className="text-2xl font-bold text-white drop-shadow-sm">{stats.totalWorkouts}</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Workouts</div>
                                 </div>
-                                <div className="bg-slate-900/30 p-5 rounded-3xl border border-white/10">
-                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{Math.round(stats.totalDurationMinutes / 60)}h</div>
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
+                                    <div className="text-2xl font-bold text-white drop-shadow-sm">{Math.round(stats.totalDurationMinutes / 60)}h</div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Time</div>
                                 </div>
-                            </div>
 
-                            <div className="flex-1 space-y-8">
-                                <div>
-                                    <div className="text-6xl font-black text-white tracking-tighter drop-shadow-xl flex items-baseline gap-2">
-                                        {(stats.totalVolume / 1000).toFixed(1)}
-                                        <span className="text-2xl text-blue-400/80 font-bold tracking-normal">k</span>
+                                {/* Row 2: Longest Workout & Streak */}
+                                {/* Row 2: Longest Workout & Streak */}
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center overflow-hidden">
+
+                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.longestWorkout.durationMinutes}<span className="text-base font-medium text-white/50 ml-1">m</span></div>
+                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Longest Workout</div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
+                                        {new Date(stats.longestWorkout.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                     </div>
-                                    <div className="text-xs text-blue-200/60 uppercase tracking-widest font-bold ml-1">{stats.units} Volume</div>
+                                </div>
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
+
+                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.longestWeekStreak?.weeks || 0} <span className="text-base font-medium text-white/50">Weeks</span></div>
+                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Longest Streak</div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
+                                        {stats.longestWeekStreak?.startDate ? new Date(stats.longestWeekStreak.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
+                                    </div>
                                 </div>
 
-                                <div>
-                                    <div className="text-lg font-bold text-blue-400 mb-2 drop-shadow-md">{stats.heaviestLift.name}</div>
-                                    <div className="text-4xl font-bold text-white drop-shadow-lg">{stats.heaviestLift.weight} <span className="text-lg text-white/50 font-normal">{stats.units}</span></div>
-                                    <div className="text-[10px] text-blue-200/60 uppercase tracking-widest font-bold mt-1">Heaviest Lift</div>
+                                {/* Row 3: Heaviest Lift & Most Reps */}
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center overflow-hidden">
+                                    <div className="text-lg font-bold text-white drop-shadow-sm truncate w-full mb-1">{stats.heaviestLift.name}</div>
+                                    <div className="text-xl font-bold text-blue-400 drop-shadow-sm">{stats.heaviestLift.weight} <span className="text-base text-white/50 font-normal">{stats.units}</span></div>
+                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Heaviest Lift</div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
+                                        {new Date(stats.heaviestLift.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    </div>
+                                </div>
+                                <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center overflow-hidden">
+                                    <div className="text-lg font-bold text-white drop-shadow-sm truncate w-full mb-1">{stats.mostRepsSet.exerciseName}</div>
+                                    <div className="text-xl font-bold text-blue-400 drop-shadow-sm whitespace-nowrap">
+                                        {stats.mostRepsSet.reps} <span className="text-white/50 text-sm">reps</span>
+                                        <span className="text-white/30 text-sm mx-1">@</span>
+                                        <span className="text-white/50 text-sm">{Math.round(stats.mostRepsSet.weight)} {stats.units}</span>
+                                    </div>
+                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Most Reps</div>
+                                    <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
+                                        {new Date(stats.mostRepsSet.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="text-center mt-auto pt-6">
-                                <div className="text-[10px] text-white/40 font-mono tracking-[0.2em] uppercase">strong wrapped</div>
+                            {/* Minimal Footer */}
+                            <div className="mt-auto pt-4 mb-8 flex items-center justify-start gap-1.5 opacity-30">
+                                <Github size={12} className="text-white" />
+                                <span className="text-[10px] font-medium text-white tracking-wider">sungjunleeee</span>
                             </div>
                         </div>
                     </div>
