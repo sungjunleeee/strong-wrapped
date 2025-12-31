@@ -201,7 +201,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                                 {/* Row 1: Workouts & Time */}
                                 <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
                                     <div className="text-2xl font-bold text-white drop-shadow-sm">{stats.totalWorkouts}</div>
-                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">Workouts</div>
+                                    <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1">{stats.totalWorkouts === 1 ? 'Workout' : 'Workouts'}</div>
                                 </div>
                                 <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
                                     <div className="text-2xl font-bold text-white drop-shadow-sm">{Math.round(stats.totalDurationMinutes / 60)}h</div>
@@ -220,7 +220,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                                 </div>
                                 <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center">
 
-                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.longestWeekStreak?.weeks || 0} <span className="text-base font-medium text-white/50">Weeks</span></div>
+                                    <div className="text-3xl font-bold text-white drop-shadow-sm">{stats.longestWeekStreak?.weeks || 0} <span className="text-base font-medium text-white/50">{stats.longestWeekStreak?.weeks === 1 ? 'Week' : 'Weeks'}</span></div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Longest Streak</div>
                                     <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
                                         {stats.longestWeekStreak?.startDate ? new Date(stats.longestWeekStreak.startDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '-'}
@@ -230,7 +230,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                                 {/* Row 3: Heaviest Lift & Most Reps */}
                                 <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center overflow-hidden">
                                     <div className="text-lg font-bold text-white drop-shadow-sm truncate w-full mb-1">{stats.heaviestLift.name}</div>
-                                    <div className="text-xl font-bold text-blue-400 drop-shadow-sm">{stats.heaviestLift.weight} <span className="text-base text-white/50 font-normal">{stats.units}</span></div>
+                                    <div className="text-xl font-bold text-blue-400 drop-shadow-sm">{stats.heaviestLift.weight} <span className="text-base text-white/50 font-medium">{stats.units === 'lbs' && stats.heaviestLift.weight === 1 ? 'lb' : stats.units}</span></div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Heaviest Lift</div>
                                     <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
                                         {new Date(stats.heaviestLift.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
@@ -239,9 +239,10 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                                 <div className="bg-slate-900/30 p-4 rounded-3xl border border-white/10 flex flex-col justify-center overflow-hidden">
                                     <div className="text-lg font-bold text-white drop-shadow-sm truncate w-full mb-1">{stats.mostRepsSet.exerciseName}</div>
                                     <div className="text-xl font-bold text-blue-400 drop-shadow-sm whitespace-nowrap">
-                                        {stats.mostRepsSet.reps} <span className="text-white/50 text-sm">reps</span>
-                                        <span className="text-white/30 text-sm mx-1">@</span>
-                                        <span className="text-white/50 text-sm">{Math.round(stats.mostRepsSet.weight)} {stats.units}</span>
+                                        {stats.mostRepsSet.reps} <span className="text-white/50 text-xs font-medium">{stats.mostRepsSet.reps === 1 ? 'rep' : 'reps'}</span><span className="text-white/50 text-xs font-medium">, </span>
+                                        <span className="text-white/50 text-xs font-medium">
+                                            {Math.round(stats.mostRepsSet.weight)} {stats.units === 'lbs' && Math.round(stats.mostRepsSet.weight) === 1 ? 'lb' : stats.units}
+                                        </span>
                                     </div>
                                     <div className="text-[10px] text-blue-200/70 uppercase tracking-wider font-bold mt-1 whitespace-nowrap">Most Reps</div>
                                     <div className="text-[9px] text-white/30 uppercase tracking-widest font-medium mt-1">
