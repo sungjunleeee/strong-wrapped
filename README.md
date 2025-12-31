@@ -2,8 +2,7 @@
 
 Visualize your year in gains with a Spotify Wrapped-style summary for your Strong app workout data.
 
-<img src="https://github.com/sungjunleeee/strong-wrapped/blob/main/public/og-image.png?raw=true" alt="Strong Wrapped" width="800" />
-> Note: If you don't have an OG image yet, you might want to add one to `public/og-image.png` for a nice preview.
+<img src="./strong-wrapped-demo.png" alt="Strong Wrapped Demo" width="50%" />
 
 ## 🚀 Features
 
