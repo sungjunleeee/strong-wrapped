@@ -7,9 +7,10 @@ import { generateYearDays, STRONG_BLUE_RGB, getHeatmapOpacity } from '../utils/h
 
 interface BackgroundHeatmapProps {
     stats: YearStats;
+    isVisible: boolean;
 }
 
-export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) => {
+export const BackgroundHeatmap = React.memo(({ stats, isVisible }: BackgroundHeatmapProps) => {
     const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
     const days = useMemo(() => {
@@ -98,14 +99,13 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
     }, [days, stats.workoutsByDate]);
 
     const containerVariants = {
-        hidden: { opacity: 0 },
+        hidden: {
+            opacity: 0,
+            transition: { duration: 0.2 }
+        },
         visible: {
             opacity: 1,
             transition: { duration: 0.3 }
-        },
-        exit: {
-            opacity: 0,
-            transition: { duration: 0.2 }
         }
     };
 
@@ -113,8 +113,7 @@ export const BackgroundHeatmap = React.memo(({ stats }: BackgroundHeatmapProps) 
         <motion.div
             variants={containerVariants}
             initial="hidden"
-            animate="visible"
-            exit="exit"
+            animate={isVisible ? "visible" : "hidden"}
             className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center p-3"
         >
             <canvas ref={canvasRef} />

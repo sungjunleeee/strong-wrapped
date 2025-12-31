@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import type { YearStats } from '../../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { toPng } from 'html-to-image';
 import { Share2, CheckSquare, Square, Loader2 } from 'lucide-react';
 import { BackgroundHeatmap } from '../BackgroundHeatmap';
@@ -161,12 +161,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats }) => {
                         <div className="absolute top-[-10%] right-[-10%] w-[80%] h-[50%] bg-blue-600/20 blur-[100px] rounded-full pointer-events-none animate-breathe" />
                         <div className="absolute bottom-[-10%] left-[-10%] w-[80%] h-[50%] bg-indigo-600/10 blur-[100px] rounded-full pointer-events-none animate-breathe-delayed" />
 
-                        {/* Heatmap Layer */}
-                        <AnimatePresence>
-                            {showHeatmap && (
-                                <BackgroundHeatmap key="heatmap" stats={stats} />
-                            )}
-                        </AnimatePresence>
+                        {/* Heatmap Layer - Always mounted to prevent race conditions during export, visibility controlled by prop */}
+                        <BackgroundHeatmap stats={stats} isVisible={showHeatmap} />
 
                         {/* Glass Surface Overlay - The "Liquid Glass" Sheen */}
                         {/* 1. Frosted Glaze - Removed blur for export consistency */}
