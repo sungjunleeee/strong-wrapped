@@ -2,7 +2,10 @@
 
 Visualize your year in gains with a Spotify Wrapped-style summary for your Strong app workout data.
 
+**Try it out here! [https://sungjunleeee.github.io/strong-wrapped](https://sungjunleeee.github.io/strong-wrapped)**
+
 <img src="./strong-wrapped-demo.png" alt="Strong Wrapped Demo" width="50%" />
+
 
 ## 🚀 Features
 
@@ -12,14 +15,28 @@ Visualize your year in gains with a Spotify Wrapped-style summary for your Stron
 - **Strong App Compatible:** Designed to work specifically with the CSV export from the Strong workout tracker.
 - **Customizable:** Choose your preferred units (kg/lbs) and select the specific year you want to view.
 
+## 📝 How to Use
+
+1. **Export Your Data:**
+   - Open the **Strong** app on your device.
+   - Go to **Profile** > **Settings** > **Export Data**.
+   - Choose **Export as CSV** and save the file to your device.
+
+2. **Upload & Visualize:**
+   - Visit [Strong Wrapped](https://sungjunleeee.github.io/strong-wrapped).
+   - Click to upload or drag & drop your exported CSV file.
+   - Select the year you want to visualize.
+   - Enjoy your personalized workout summary!
+
 ## 🛠️ Tech Stack
 
 - **Framework:** [React](https://react.dev/) + [Vite](https://vitejs.dev/)
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
-- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [clsx](https://github.com/lukeed/clsx) / [tailwind-merge](https://github.com/dcastil/tailwind-merge)
 - **Animations:** [Framer Motion](https://www.framer.com/motion/)
 - **Charts:** [Recharts](https://recharts.org/)
-- **Utilities:** `papaparse` (CSV parsing), `date-fns` (Date manipulation)
+- **Utilities:** `papaparse` (CSV parsing), `date-fns` (Date manipulation), `lucide-react` (Icons)
+- **Export:** `html-to-image` (Shareable summaries)
 
 ## 🏃‍♂️ How to Run Locally
 
@@ -33,7 +50,6 @@ Visualize your year in gains with a Spotify Wrapped-style summary for your Stron
    ```bash
    npm install
    ```
-   *(or `yarn`, `pnpm`, `bun`)*
 
 3. **Start the development server**
    ```bash
@@ -55,4 +71,4 @@ This is a personal project and is **not** affiliated with, endorsed by, or conne
 
 ---
 
-Made with ❤️ by [Sungjun](https://github.com/sungjunleeee)
+Made with ❤️ by [Sungjun](https://github.com/sungjunleeee) as an experiment with **Google Antigravity**.
